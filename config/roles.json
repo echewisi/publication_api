@@ -1,0 +1,31 @@
+{
+    "roles": [
+      {
+        "name": "admin",
+        "permissions": [
+          "create_book",
+          "retrieve_books",
+          "retrieve_book",
+          "update_book",
+          "delete_book",
+          "assign_role"
+        ]
+      },
+      {
+        "name": "seller",
+        "permissions": [
+          "create_book",
+          "retrieve_books",
+          "retrieve_book",
+          "update_book"
+        ]
+      },
+      {
+        "name": "buyer",
+        "permissions": [
+            "retrieve_books",
+            "retrieve_book"
+        ]
+      }
+    ]
+  }
