@@ -2,7 +2,7 @@ const { Book, User } = require('../models');
 const { v4: uuidv4 } = require('uuid');
 const axios = require('axios');
 const {wsServer}= require('../index')
-const cache = require('../cache'); // Using the newly created cache module
+const cache = require('../config/cache'); // Using the newly created cache module
 
 // Initialize WebSocket server (assuming you have a WebSocket server running)
 // const wss = new WebSocket.Server({ noServer: true });

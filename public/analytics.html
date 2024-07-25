@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Analytics Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <h1>Analytics Dashboard</h1>
+  <canvas id="topBooksChart" width="400" height="200"></canvas>
+  <canvas id="userPatternsChart" width="400" height="200"></canvas>
+  <canvas id="salesTrendsChart" width="400" height="200"></canvas>
+
+  <script>
+    async function fetchData(endpoint) {
+      const response = await fetch(endpoint, {
+        headers: {
+          'Authorization': 'Bearer ' + localStorage.getItem('token'),
+        },
+      });
+      return response.json();
+    }
+
+    async function renderCharts() {
+      const topBooks = await fetchData('/api/analytics/topbooks');
+      const userPatterns = await fetchData('/api/analytics/userpatterns');
+      const salesTrends = await fetchData('/api/analytics/salestrends');
+
+      // Top Books Chart
+      const topBooksChartCtx = document.getElementById('topBooksChart').getContext('2d');
+      new Chart(topBooksChartCtx, {
+        type: 'bar',
+        data: {
+          labels: topBooks.map(book => book.Book.title),
+          datasets: [{
+            label: 'Top Selling Books',
+            data: topBooks.map(book => book.salesCount),
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+
+      // User Patterns Chart
+      const userPatternsChartCtx = document.getElementById('userPatternsChart').getContext('2d');
+      new Chart(userPatternsChartCtx, {
+        type: 'bar',
+        data: {
+          labels: userPatterns.map(pattern => pattern.userId),
+          datasets: [{
+            label: 'User Purchase Patterns',
+            data: userPatterns.map(pattern => pattern.purchaseCount),
+            backgroundColor: 'rgba(153, 102, 255, 0.2)',
+            borderColor: 'rgba(153, 102, 255, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+
+      // Sales Trends Chart
+      const salesTrendsChartCtx = document.getElementById('salesTrendsChart').getContext('2d');
+      new Chart(salesTrendsChartCtx, {
+        type: 'line',
+        data: {
+          labels: salesTrends.map(trend => trend.month),
+          datasets: [{
+            label: 'Sales Trends Over Time',
+            data: salesTrends.map(trend => trend.salesCount),
+            backgroundColor: 'rgba(255, 159, 64, 0.2)',
+            borderColor: 'rgba(255, 159, 64, 1)',
+            borderWidth: 1,
+            fill: false
+          }]
+        },
+        options: {
+          scales: {
+            x: {
+              type: 'time',
+              time: {
+                unit: 'month'
+              }
+            },
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+
+    renderCharts();
+  </script>
+</body>
+</html>

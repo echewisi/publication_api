@@ -8,7 +8,8 @@
           "retrieve_book",
           "update_book",
           "delete_book",
-          "assign_role"
+          "assign_role",
+          "view_analytics"
         ]
       },
       {

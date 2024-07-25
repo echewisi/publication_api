@@ -26,7 +26,7 @@ module.exports = (sequelize) => {
   User.associate = (models) => {
     User.hasMany(models.Book, {
       foreignKey: 'userId',
-      as: 'books', // alias for the relationship
+      as: 'books', 
     });
   };
 
