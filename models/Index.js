@@ -4,13 +4,22 @@ const config = require('../config/config');
 
 dotenv.config();
 
-const sequelizeConfig = config[process.env.NODE_ENV || 'development'];
-
-const sequelize = new Sequelize(sequelizeConfig.database, sequelizeConfig.username, sequelizeConfig.password, {
-  host: sequelizeConfig.host,
-  dialect: sequelizeConfig.dialect,
-  logging: false, // Disable logging; default: console.log
-});
+let sequelize;
+if (process.env.NODE_ENV === 'production') {
+  const sequelizeConfig= config['production']
+  sequelize = new Sequelize(sequelizeConfig.url, {
+    dialect: 'postgres',
+    protocol: 'postgres',
+    logging: false, 
+  });
+} else {
+  const sequelizeConfig = config[process.env.NODE_ENV || 'development'];
+  sequelize = new Sequelize(sequelizeConfig.database, sequelizeConfig.username, sequelizeConfig.password, {
+    host: sequelizeConfig.host,
+    dialect: sequelizeConfig.dialect,
+    logging: false, 
+  });
+}
 
 const User = require('./User')(sequelize);
 const Book = require('./Book')(sequelize);
