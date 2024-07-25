@@ -1,14 +1,49 @@
-const { Book } = require('../models');
+const { Book, User } = require('../models');
+const { v4: uuidv4 } = require('uuid');
 const axios = require('axios');
-const { wsServer } = require('../index');
-const cache = require('../cache');
-const { Op } = require('sequelize');
+const {wsServer}= require('../index')
+const cache = require('../cache'); // Using the newly created cache module
+
+// Initialize WebSocket server (assuming you have a WebSocket server running)
+// const wss = new WebSocket.Server({ noServer: true });
+
+// const notifyClients = (message) => {
+//   wss.clients.forEach((client) => {
+//     if (client.readyState === WebSocket.OPEN) {
+//       client.send(JSON.stringify(message));
+//     }
+//   });
+// };
 
 const createBook = async (req, res) => {
   try {
-    const { title, author, isbn, publishedDate, price, stock } = req.body;
-    const book = await Book.create({ title, author, isbn, publishedDate, price, stock });
-    res.status(201).json(book);
+    const { title, author, isbn, publishedDate, price, stock, genre } = req.body;
+    if (!title || !author || !isbn || !publishedDate || !price || !stock) {
+      return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    const book = await Book.create({
+      id: uuidv4(),
+      title,
+      author,
+      isbn,
+      publishedDate,
+      price,
+      stock,
+      genre,
+      userId: req.user.id
+    });
+
+    wsServer.notifyClients({
+      type: 'book_created',
+      book: {
+        id: book.id,
+        title: book.title,
+        price: book.price,
+        stock: book.stock
+      }
+    });
+    res.status(201).json({ message: 'Book created successfully', book });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal server error' });
@@ -18,7 +53,7 @@ const createBook = async (req, res) => {
 const getBooks = async (req, res) => {
   try {
     const books = await Book.findAll();
-    res.json(books);
+    res.json({ books });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal server error' });
@@ -27,12 +62,11 @@ const getBooks = async (req, res) => {
 
 const getBookById = async (req, res) => {
   try {
-    const { id } = req.params;
-    const book = await Book.findByPk(id);
+    const book = await Book.findByPk(req.params.id);
     if (!book) {
       return res.status(404).json({ error: 'Book not found' });
     }
-    res.json(book);
+    res.json({ book });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal server error' });
@@ -41,13 +75,21 @@ const getBookById = async (req, res) => {
 
 const updateBook = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { title, author, isbn, publishedDate, price, stock } = req.body;
-    const book = await Book.findByPk(id);
+    const { title, author, isbn, publishedDate, price, stock, genre } = req.body;
+    const book = await Book.findByPk(req.params.id);
     if (!book) {
       return res.status(404).json({ error: 'Book not found' });
     }
-    await book.update({ title, author, isbn, publishedDate, price, stock });
+
+    book.title = title || book.title;
+    book.author = author || book.author;
+    book.isbn = isbn || book.isbn;
+    book.publishedDate = publishedDate || book.publishedDate;
+    book.price = price || book.price;
+    book.stock = stock || book.stock;
+    book.genre= genre || book.genre;
+
+    await book.save();
 
     // Notify clients of the update
     wsServer.notifyClients({
@@ -60,7 +102,7 @@ const updateBook = async (req, res) => {
       }
     });
 
-    res.json(book);
+    res.json({ message: 'Book updated successfully', book });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal server error' });
@@ -69,13 +111,16 @@ const updateBook = async (req, res) => {
 
 const deleteBook = async (req, res) => {
   try {
-    const { id } = req.params;
-    const book = await Book.findByPk(id);
+    const book = await Book.findByPk(req.params.id);
     if (!book) {
       return res.status(404).json({ error: 'Book not found' });
     }
+
     await book.destroy();
-    res.status(204).send();
+
+    notifyClients({ event: 'book_deleted', bookId: req.params.id });
+
+    res.json({ message: 'Book deleted successfully' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal server error' });
@@ -96,7 +141,7 @@ const getExternalBookDetails = async (req, res) => {
       return res.json({ book, externalDetails: cachedData });
     }
 
-    // Replace with the actual external API endpoint and include API key if required
+    // Replace with the actual external API endpoint
     const response = await axios.get(`https://openlibrary.org/api/books?bibkeys=ISBN:${book.isbn}&jscmd=details&format=json`);
     const externalDetails = response.data[`ISBN:${book.isbn}`]?.details || {};
 
@@ -124,21 +169,18 @@ const convertBookPrice = async (req, res) => {
     }
 
     // Check cache first
-    const cachedData = cache.get(`book_${id}_convert_${currency}`);
+    const cachedData = cache.get(`book_${id}_price_${currency}`);
     if (cachedData) {
       return res.json({ book, convertedPrice: cachedData });
     }
 
-    const response = await axios.get(`https://api.exchangerate-api.com/v4/latest/USD`);
-    const rate = response.data.rates[currency.toUpperCase()];
-    if (!rate) {
-      return res.status(400).json({ error: 'Invalid currency code' });
-    }
-
-    const convertedPrice = (book.price * rate).toFixed(2);
+    // Replace with actual currency conversion API endpoint and logic
+    const response = await axios.get(`https://api.exchangeratesapi.io/latest?base=USD&symbols=${currency}`);
+    const rate = response.data.rates[currency];
+    const convertedPrice = book.price * rate;
 
     // Cache the response
-    cache.set(`book_${id}_convert_${currency}`, convertedPrice, 3600); // Cache for 1 hour
+    cache.set(`book_${id}_price_${currency}`, convertedPrice, 3600); // Cache for 1 hour
 
     res.json({ book, convertedPrice });
   } catch (error) {

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WebSocket Client</title>
+</head>
+<body>
+  <h1>Book Updates</h1>
+  <ul id="updates"></ul>
+
+  <script>
+    const ws = new WebSocket('ws://localhost:3000');
+
+    ws.onopen = () => {
+      console.log('Connected to WebSocket server');
+    };
+
+    ws.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      if (message.type === 'book_update') {
+        const { book } = message;
+        const li = document.createElement('li');
+        li.textContent = `Book Updated: ${book.title} - Price: $${book.price}, Stock: ${book.stock}`;
+        document.getElementById('updates').appendChild(li);
+      }
+    };
+
+    ws.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        if (message.type === 'book_created') {
+          const { book } = message;
+          const li = document.createElement('li');
+          li.textContent = `Book Created: ${book.title} - Price: $${book.price}, Stock: ${book.stock}`;
+          document.getElementById('updates').appendChild(li);
+        }
+      };    
+
+    ws.onclose = () => {
+      console.log('Disconnected from WebSocket server');
+    };
+
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+  </script>
+</body>
+</html>
