@@ -1,6 +1,4 @@
 const { Sale, Book } = require('../models');
-const Book= require('../models/Book')
-const Sale= require('../models/Sale')
 const { Op } = require('sequelize');
 
 const getTopSellingBooksByGenre = async () => {
