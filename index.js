@@ -3,12 +3,15 @@ const express = require('express');
 const http = require('http');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./config/swagger');
 const { sequelize } = require('./models');
 const setupWebSocket = require('./sockets/notificationSocket');
 
 // Import routes
 const bookRoutes = require('./routes/bookRoutes');
 const userRoutes = require('./routes/userRoutes');
+const analyticsRoutes = require('./routes/analyticsRoutes'); 
 
 // Initialize Express app
 const app = express();
@@ -20,6 +23,10 @@ app.use(bodyParser.json());
 // Routes
 app.use('/api', bookRoutes);
 app.use('/api', userRoutes);
+app.use('/api', analyticsRoutes); 
+
+// Use Swagger docs
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Create HTTP server
 const server = http.createServer(app);
