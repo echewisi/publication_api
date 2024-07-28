@@ -8,7 +8,7 @@ const bookValidation= require('../schema/bookValidation')
 
 // Create a new book (Admin, Seller only)
 /**
- * @openapi
+ * @swagger
  * /books:
  *   post:
  *     summary: Create a new book (Admin, Seller only)
@@ -32,7 +32,7 @@ router.post('/books', verifyToken, authorize(['create_book']), validationMiddlew
 
 // Retrieve a list of all books (all users)
 /**
- * @openapi
+ * @swagger
  * /books:
  *   get:
  *     summary: Retrieve a list of all books
@@ -47,7 +47,7 @@ router.get('/books', verifyToken, authorize(['retrieve_books']),validationMiddle
 
 // Retrieve details of a specific book by ID (all users)
 /**
- * @openapi
+ * @swagger
  * /books/{id}:
  *   get:
  *     summary: Retrieve details of a specific book by ID
@@ -68,7 +68,7 @@ router.get('/books/:id', verifyToken, authorize(['retrieve_book']), validationMi
 
 // Update details of a specific book by ID (Admin, Seller only)
 /**
- * @openapi
+ * @swagger
  * /books/{id}:
  *   put:
  *     summary: Update details of a specific book by ID (Admin, Seller only)
@@ -102,7 +102,7 @@ router.put('/books/:id', verifyToken, authorize(['update_book']), validationMidd
 
 // Delete a specific book by ID (Admin only)
 /**
- * @openapi
+ * @swagger
  * /books/{id}:
  *   delete:
  *     summary: Delete a specific book by ID (Admin only)
@@ -129,7 +129,7 @@ router.delete('/books/:id', verifyToken, authorize(['delete_book']), bookControl
 
 //get external book details
 /**
- * @openapi
+ * @swagger
  * /books/{id}/external:
  *   get:
  *     summary: Retrieve external book details based on the ISBN
@@ -152,7 +152,7 @@ router.get('/books/:id/external', verifyToken, bookController.getExternalBookDet
 
 //convert book price
 /**
- * @openapi
+ * @swagger
  * /books/{id}/convert/{currency}:
  *   get:
  *     summary: Convert book price to a specified currency

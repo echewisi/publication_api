@@ -6,7 +6,7 @@ const  authorize  = require('../middlewares/rbac');
 const router = express.Router();
 
 /**
- * @openapi
+ * @swagger
  * /analytics/topbooks:
  *   get:
  *     summary: Retrieve the top-selling books by genre
@@ -24,7 +24,7 @@ const router = express.Router();
 router.get('/analytics/topbooks', verifyToken, authorize(["view_analytics"]), analyticsController.getTopSellingBooks);
 
 /**
- * @openapi
+ * @swagger
  * /analytics/userpatterns:
  *   get:
  *     summary: Retrieve user purchase patterns
@@ -42,7 +42,7 @@ router.get('/analytics/topbooks', verifyToken, authorize(["view_analytics"]), an
 router.get('/analytics/userpatterns', verifyToken, authorize(["view_analytics"]), analyticsController.getUserPurchasePatterns);
 
 /**
- * @openapi
+ * @swagger
  * /analytics/salestrends:
  *   get:
  *     summary: Retrieve sales trends over time

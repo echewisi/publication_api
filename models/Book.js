@@ -34,7 +34,7 @@ module.exports = (sequelize) => {
     },
     genre: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
     },
     userId: {
       type: DataTypes.UUID,
@@ -48,7 +48,7 @@ module.exports = (sequelize) => {
   Book.associate = (models) => {
     Book.belongsTo(models.User, {
       foreignKey: 'userId',
-      as: 'user', // alias for the relationship
+      as: 'user', 
     });
   };
 

@@ -4,10 +4,17 @@ const userController = require('../controllers/userController');
 const { verifyToken } = require('../middlewares/auth');
 const authorize = require('../middlewares/rbac');
 const { registerSchema, loginSchema, roleSchema } = require('../schema/userValidation');
+const validationMiddleware= require('../middlewares/validation')
 
+/**
+ * @swagger
+ * tags:
+ *   name: Users
+ *   description: User management
+ */
 // Register a new user
 /**
- * @openapi
+ * @swagger
  * /users/register:
  *   post:
  *     summary: Register a new user
@@ -25,11 +32,11 @@ const { registerSchema, loginSchema, roleSchema } = require('../schema/userValid
  *       400:
  *         description: Bad request
  */
-router.post('/users/register', registerSchema, userController.register);
+router.post('/users/register',  validationMiddleware(registerSchema) , userController.register);
 
 // Authenticate a user and return a JWT
 /**
- * @openapi
+ * @swagger
  * /users/login:
  *   post:
  *     summary: Authenticate a user and return a JWT
@@ -47,11 +54,11 @@ router.post('/users/register', registerSchema, userController.register);
  *       401:
  *         description: Unauthorized
  */
-router.post('/users/login', loginSchema, userController.login);
+router.post('/users/login', validationMiddleware(loginSchema), userController.login);
 
 // Assign a role to a user (Admin only)
 /**
- * @openapi
+ * @swagger
  * /users/role:
  *   post:
  *     summary: Assign a role to a user (Admin only)
@@ -71,6 +78,6 @@ router.post('/users/login', loginSchema, userController.login);
  *       403:
  *         description: Forbidden
  */
-router.post('/users/role', verifyToken, authorize(['assign_role']), roleSchema, userController.assignRole);
+router.post('/users/role', verifyToken, authorize(['assign_role']), validationMiddleware(roleSchema), userController.assignRole);
 
 module.exports = router;

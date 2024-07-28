@@ -1,7 +1,7 @@
-const { Book, User } = require('../models');
+const { Book, User } = require('../models/Index');
 const { v4: uuidv4 } = require('uuid');
 const axios = require('axios');
-const {wsServer}= require('../index')
+const { wsServer } = require('../index')
 const cache = require('../config/cache'); // Using the newly created cache module
 
 // Initialize WebSocket server (assuming you have a WebSocket server running)
@@ -87,7 +87,7 @@ const updateBook = async (req, res) => {
     book.publishedDate = publishedDate || book.publishedDate;
     book.price = price || book.price;
     book.stock = stock || book.stock;
-    book.genre= genre || book.genre;
+    book.genre = genre || book.genre;
 
     await book.save();
 

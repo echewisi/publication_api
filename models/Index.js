@@ -6,18 +6,20 @@ dotenv.config();
 
 let sequelize;
 if (process.env.NODE_ENV === 'production') {
-  const sequelizeConfig= config['production']
+  const sequelizeConfig = config['production']
   sequelize = new Sequelize(sequelizeConfig.url, {
+    // database: 'publication',
     dialect: 'postgres',
     protocol: 'postgres',
-    logging: false, 
+    logging: false,
   });
 } else {
-  const sequelizeConfig = config[process.env.NODE_ENV || 'development'];
+  const sequelizeConfig = config['development'];
   sequelize = new Sequelize(sequelizeConfig.database, sequelizeConfig.username, sequelizeConfig.password, {
     host: sequelizeConfig.host,
     dialect: sequelizeConfig.dialect,
-    logging: false, 
+    logging: false,
+    
   });
 }
 

@@ -1,22 +1,32 @@
-const { Sale, Book } = require('../models');
+const { Sale, Book } = require('../models/Index');
 const { Op } = require('sequelize');
 
 const getTopSellingBooksByGenre = async () => {
-  const topBooks = await Sale.findAll({
-    attributes: [
-      'bookId',
-      [sequelize.fn('COUNT', sequelize.col('bookId')), 'salesCount'],
-    ],
-    include: [{
-      model: Book,
-      attributes: ['title', 'genre'],
-    }],
-    group: ['bookId', 'Book.id'],
-    order: [[sequelize.literal('salesCount'), 'DESC']],
-    limit: 10,
-  });
+  try {
+    const topBooks = await Sale.findAll({
+      attributes: [
+        'bookId',
+        [Sequelize.fn('count', Sequelize.col('bookId')), 'totalSales']
+      ],
+      group: ['bookId', 'Book.id', 'Book.title', 'Book.genre'],
+      include: [
+        {
+          model: Book,
+          attributes: ['title', 'genre']
+        }
+      ],
+      order: [[Sequelize.literal('totalSales'), 'DESC']],
+      limit: 10
+    });
 
-  return topBooks;
+    return topBooks.map(sale => ({
+      title: sale.Book.title,
+      genre: sale.Book.genre,
+      totalSales: sale.dataValues.totalSales
+    }));
+  } catch (error) {
+    throw new Error('Error fetching top-selling books: ' + error.message);
+  }
 };
 
 const getUserPurchasePatterns = async () => {
